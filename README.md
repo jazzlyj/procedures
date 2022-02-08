@@ -1,3 +1,13 @@
-# notes
+# DevOps Setup and Installation procedures for
 
-Repo for procedures, commands and other related notes
+## Ansible
+
+## Canonical:
+* Maas
+* Juju
+* Charmed K8s
+
+
+## Docker
+
+## K8s
