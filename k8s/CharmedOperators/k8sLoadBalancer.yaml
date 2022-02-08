@@ -1,0 +1,22 @@
+description: Load Balancer for Kubernetes cluster.
+series: focal
+machines:
+  '2':
+applications:
+  kubeapi-load-balancer:
+    annotations:
+      gui-x: '450'
+      gui-y: '250'
+    charm: cs:~containers/kubeapi-load-balancer-866
+    expose: true
+    num_units: 1
+    resources: {}
+    to:
+      - '2'
+relations:
+- - kubernetes-master:loadbalancer-external
+  - kubeapi-load-balancer:lb-consumers
+- - kubernetes-master:loadbalancer-internal
+  - kubeapi-load-balancer:lb-consumers
+- - kubeapi-load-balancer:certificates
+  - easyrsa:client

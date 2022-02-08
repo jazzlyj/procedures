@@ -1,0 +1,5 @@
+credentials:
+  mymaas:
+    anyuser:
+      auth-type: oauth1
+      maas-oauth: 

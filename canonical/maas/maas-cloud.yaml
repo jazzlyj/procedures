@@ -1,0 +1,5 @@
+clouds:
+  mymaas:
+    type: maas
+    auth-types: [oauth1]
+    endpoint: http://$IPADDR:5240/MAAS

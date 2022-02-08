@@ -1,0 +1,9 @@
+applications:
+  docker-registry:
+    series: focal
+    charm: cs:~containers/docker-registry
+    num_units: 1
+    to:
+    - "3"
+relations:
+  - [docker-registry, easyrsa:client]
