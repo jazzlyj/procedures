@@ -86,7 +86,7 @@ https://medium.com/@kosta709/kubernetes-by-kubeadm-config-yamls-94e2ee11244
 ```
 
 # Input Params
-* Copy and past all env vars into the command line from the file: kubeadmExportParams
+* Copy and paste all env vars into the command line from the file: k8sShellParams.sh
   * Example here: 
 ```
 # export addresses and other vars
@@ -143,7 +143,31 @@ set +a
 ```
 
 * execute var subst with template
+```
+envsubst < kubeconfig-template.yaml > ${OUTPUT_DIR}/kubeconfig
+```
 
 
+# Install prerequisites on master
+```
+```
+
+
+```
+```
+
+```
+```
+
+
+```
+```
+
+```
+```
+
+
+```
+```
 
 
