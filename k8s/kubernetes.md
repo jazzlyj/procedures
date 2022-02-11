@@ -150,6 +150,7 @@ envsubst < kubeconfig-template.yaml > ${OUTPUT_DIR}/kubeconfig
 
 # Install prerequisites on master
 ```
+envsubst < kubeadm-prepare-master-ubuntu-tmpl > ${OUTPUT_DIR}/prepare-master.sh
 ```
 
 
