@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#
 # ssh-multi : a script to ssh multiple servers over multiple tmux panes with
 #             with all panes syncronized.
 #
