@@ -1,7 +1,7 @@
 # ubuntu 20
 
 ## initial quick setup 
-### after maas install, login as ubuntu 
+### if not setting up other users - after maas install, login as ubuntu
 * ssh as ubuntu from another host
 ```
 ssh ubuntu@$HOST
@@ -23,7 +23,7 @@ You will need to either restart your shell/terminal or log out and back in for t
 
 ### SSH 
 #### setup passwordless ssh
-* see [passwordless-ssh](ssh.md#passwordless-ssh)
+* see [passwordless-ssh](../ssh.md#passwordless-ssh)
 
 * On the desired server, rsync over the authorized_keys file into the target users .ssh dir
 ```
@@ -115,6 +115,9 @@ sudo apt install git
 sudo apt install vim
 sudo apt install python3-pip
 
+echo alias shutd=\"sudo /sbin/shutdown\" >> ~/.bash_aliases
+
+
 ```
 
 
@@ -153,6 +156,7 @@ sudo vi /etc/fstab
 # remove the line: 
 /swap.img      none    swap    sw      0       0
 ```
+
 
 
 

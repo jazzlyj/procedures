@@ -1,8 +1,7 @@
 # K8s standalone
 
 ## PreReqs 
-* disable swap
-
+* [disable swap](../canonical/ubuntu20.md#disable-swap-for-k8s)
 
 
 ## K8s install and setup
@@ -77,6 +76,22 @@ sudo systemctl restart docker
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ----------
 https://medium.com/@kosta709/kubernetes-by-kubeadm-config-yamls-94e2ee11244
 # kubeadm init config template
@@ -101,7 +116,7 @@ OUTPUT_DIR=$(realpath -m ./_clusters/${K8S_CLUSTER_NAME})
 LOCAL_CERTS_DIR=${OUTPUT_DIR}/pki
 KUBECONFIG=${OUTPUT_DIR}/kubeconfig
 mkdir -p ${OUTPUT_DIR}
-MASTER_SSH_ADDR_1=<yourusername>@apiNode2
+MASTER_SSH_ADDR_1=<yourusername>@k8m1
 set +a
 ```
 
@@ -109,7 +124,6 @@ set +a
 ```
 export KUBEADM_TOKEN=$(kubeadm token generate)
 ```
-
 
 # Applying parameters to the template 
 ```
@@ -153,22 +167,29 @@ envsubst < kubeconfig-template.yaml > ${OUTPUT_DIR}/kubeconfig
 envsubst < kubeadm-prepare-master-ubuntu-tmpl > ${OUTPUT_DIR}/prepare-master.sh
 ```
 
-
+*if on the k8 master and run this command
 ```
-```
-
-```
+sudo bash -s < ${OUTPUT_DIR}/prepare-master.sh
 ```
 
-
+* or ssh to the master
 ```
-```
-
-```
+ssh $MASTER_SSH_ADDR_1 'sudo bash -s' < ${OUTPUT_DIR}/prepare-master.sh
 ```
 
-
+# Copy certificates to correct location on the master
 ```
+sudo mkdir -p /etc/kubernetes/; cd /etc/kubernetes/
+sudo cp -r $LOCAL_CERTS_DIR .
 ```
 
+# Copy the kubeadm config to the correct location                 
+* Copy kubeadm config file removing certificatesDir that points to $LOCAL_CERTS_DIR
+```
+sed '/certificatesDir:/d' $OUTPUT_DIR/kubeadm-init-config.yaml | sudo dd of=/root/kubeadm-init-config.yaml
+```
 
+# Run kubeadm init without certs phase
+```
+sudo kubeadm init --skip-phases certs --config /root/kubeadm-init-config.yaml
+```
