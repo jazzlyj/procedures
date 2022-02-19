@@ -19,21 +19,6 @@ net.bridge.bridge-nf-call-iptables = 1
 EOF
 ```
 
-```
-sudo sysctl --system
-sudo ufw allow 6443/tcp
-sudo ufw allow 2379/tcp
-sudo ufw allow 2380/tcp
-sudo ufw allow 10250/tcp
-sudo ufw allow 10259/tcp
-sudo ufw allow 10257/tcp
-sudo apt install mlocate
-sudo apt install git
-sudo apt install vim
-sudo apt install net-tools
-sudo apt-get update
-sudo apt-get install     ca-certificates     curl     gnupg     lsb-release
-```
 
 
 ### Container Runtimes
@@ -147,8 +132,9 @@ sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://pack
 ```
 
 * Add the Kubernetes apt repository:
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
 ```
-echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee / etc/apt/sources.list.d/kubernetes.list
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
 ```
 
 * Update apt package index, install kubelet, kubeadm and kubectl, and pin their version:
@@ -169,7 +155,42 @@ Note: In v1.22, if the user is not setting the cgroupDriver field under KubeletC
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ????
+```
+sudo sysctl --system
+sudo ufw allow 6443/tcp
+sudo ufw allow 2379/tcp
+sudo ufw allow 2380/tcp
+sudo ufw allow 10250/tcp
+sudo ufw allow 10259/tcp
+sudo ufw allow 10257/tcp
+sudo apt install mlocate
+sudo apt install git
+sudo apt install vim
+sudo apt install net-tools
+sudo apt-get update
+sudo apt-get install     ca-certificates     curl     gnupg     lsb-release
+```
+
+???
 # change docker to use systemd cgroup
 * create (or edit) the /etc/docker/daemon.json configuration file, include the following:
 ```
