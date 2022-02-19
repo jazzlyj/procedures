@@ -35,33 +35,141 @@ sudo apt-get update
 sudo apt-get install     ca-certificates     curl     gnupg     lsb-release
 ```
 
+
+### Container Runtimes
+#### Containerd
+Use the following commands to install Containerd on your system.
+
+* Install and configure prerequisites:
+```
+cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# Setup required sysctl params, these persist across reboots.
+cat <<EOF | sudo tee /etc/sysctl.d/99-kubernetes-cri.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.ipv4.ip_forward                 = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+```
+
+* Install containerd by way of docker
+Install docker to get containerd
+https://docs.docker.com/engine/install/ubuntu/
+
+ * uninstall old verions first
+```
+sudo apt-get remove docker docker-engine docker.io containerd runc
+```
+
+ * install needed prereqs
+```
+sudo apt-get install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+```
+
+ * get keyring
 ```
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 ```
 
+ * add keyring
 ```
-echo   "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 ```
 
+
+ * update and install docker and containerd
 ```
-sudo apt-get install -y docker.io
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io
+```
+
+
+* Configure containerd
+```
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml
+```
+
+* Restart containerd:
+```
+sudo systemctl restart containerd
+```
+
+
+
+* Using the systemd cgroup driver in /etc/containerd/config.toml with runc, set
+```
+[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+  ...
+  [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+    SystemdCgroup = true
+```
+
+* Restart containerd again:
+```
+sudo systemctl restart containerd
+```
+
+
+
+????
+```
 docker -v
 sudo docker run hello-world
+```
+
+
+### Install kubeadm, kubelet and kubectl
+* Update the apt package index and install packages needed to use the Kubernetes apt repository:
+```
+sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
+```
+
+* Download the Google Cloud public signing key:
+```
 sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
 ```
 
+* Add the Kubernetes apt repository:
 ```
 echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee / etc/apt/sources.list.d/kubernetes.list
 ```
 
+* Update apt package index, install kubelet, kubeadm and kubectl, and pin their version:
 ```
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
+
+#### Configuring the kubelet cgroup driver
+https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/
+
+Note: In v1.22, if the user is not setting the cgroupDriver field under KubeletConfiguration, kubeadm will default it to systemd.
+
+
+
+
+
+
+????
 # change docker to use systemd cgroup
 * create (or edit) the /etc/docker/daemon.json configuration file, include the following:
 ```
