@@ -40,6 +40,12 @@ sudo maas init region+rack --database-uri "postgres://maaspguser:$MAAS_DBPASS@lo
 
 ```
 
+* if you need to drop the db (to start over)
+```
+sudo -u postgres psql -c "DROP DATABASE maaspgdb"
+```
+
+
 
 * create an admin
 ```
@@ -66,6 +72,11 @@ maas maasadmin  maas set-config name=upstream_dns value="8.8.8.8"
 
 ### DHCP
 * see [maasDHCP.png](maasDHCP.png)
+
+
+### VLANS and Subnet 
+* setup all VLANS
+* create and add subnets to VLANs
 
 
 
