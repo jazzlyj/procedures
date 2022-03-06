@@ -114,15 +114,12 @@ system_info:
 * create a partition do NOT format. leave unformatted
 * at command line:
 
-``` 
-lxc storage create poolzfs zfs source=/dev/sdb2
 
-```
+* See storage present
 
-
-Eg:
 ```
 lxc storage list
+```
 +---------+--------+------------------------------------------------+-------------+---------+
 |  NAME   | DRIVER |                     SOURCE                     | DESCRIPTION | USED BY |
 +---------+--------+------------------------------------------------+-------------+---------+
@@ -130,11 +127,18 @@ lxc storage list
 +---------+--------+------------------------------------------------+-------------+---------+
 
 
-lxc storage create poolzfs zfs source=/dev/sdb2
+* create a new pool
+```
+sudo lxc storage create poolzfs zfs source=/dev/sdb2
+```
+
+ > output:
 Storage pool poolzfs created
 
 
+```
 lxc storage list
+```
 +---------+--------+------------------------------------------------+-------------+---------+
 |  NAME   | DRIVER |                     SOURCE                     | DESCRIPTION | USED BY |
 +---------+--------+------------------------------------------------+-------------+---------+
@@ -143,7 +147,7 @@ lxc storage list
 | poolzfs | zfs    | poolzfs                                        |             | 0       |
 +---------+--------+--------------------
 
-```
+
 
 
 * in MAAS webUI change the pool to "disk" from "default"
