@@ -33,7 +33,7 @@ sudo ip addr add 10.200.0.1/24 dev enp2s0.200
 ```
 
 
-* add info to the /etc/network/interfaces file
+* add info to the `/etc/network/interfaces` file
 ```
 auto enp2s0.200
 iface enp2s0.200 inet static
