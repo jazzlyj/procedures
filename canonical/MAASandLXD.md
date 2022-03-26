@@ -112,7 +112,8 @@ system_info:
 ## MAAS and LXD
 * setup a node with other disks, like /dev/sdb
 * create a partition do NOT format. leave unformatted
-* at command line:
+NOTE: may not even need to do this.
+
 
 
 * See storage present
@@ -131,6 +132,11 @@ lxc storage list
 ```
 sudo lxc storage create poolzfs zfs source=/dev/sdb2
 ```
+based on note above this command worked
+``` 
+sudo lxc storage create poolzfs zfs source=/dev/sdb
+```
+
 
  > output:
 Storage pool poolzfs created
