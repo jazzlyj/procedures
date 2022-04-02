@@ -1,4 +1,4 @@
-# DevOps - Setup and Installation procedures for
+# DevOps - Setup and Installation procedures for:
 
 ## Ansible
 
@@ -19,7 +19,7 @@
 [networking](networking.md)
 
 ## NFS
-
+[NFS](nfs.md)
 
 ## SSH
 [ssh](ssh.md)
