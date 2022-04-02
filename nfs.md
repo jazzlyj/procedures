@@ -36,16 +36,17 @@ sudo vi /etc/fstab
 
 
 ### create and activate the export
+`sudo vi /etc/exports` add lines. `CIDR` example is: 192.168.1.0/24
+
 ```
-sudo vi /etc/exports
-# add lines
-
-
-# activate
-sudo exportfs -ar
+/mnt        CIDR(rw,sync,no_subtree_check,crossmnt,fsid=0)
+/mnt/home   CIDR(rw,sync,no_subtree_check)
 ```
 
 
+
+* activate
+`sudo exportfs -ar`
 
 
 ### Verify exports
@@ -54,31 +55,17 @@ sudo exportfs -v
 ```
 
 
-#
-```
-```
-
-
 ## Client side
 ```
 sudo apt install nfs-common
 sudo mkdir -p /usr2/home
 sudo mount -t nfs -o vers=4 u8:/mnt/home /usr2/home
-sudo vi /etc/fstab
-# add the lines
+```
+
+`sudo vi /etc/fstab` add the lines:
+```
 u8:/mnt/home /usr2/home     nfs  defaults,timeo=900,retrans=5,_netdev 0 0
 ```
 
-#
-```
-```
 
 
-
-#
-```
-```
-
-#
-```
-```
