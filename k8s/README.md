@@ -9,20 +9,24 @@ A way to describe a series of containers, the volumes they might share, and inte
 
 Gives ability to migrate an application live from one version to another version without having downtime
 
-
 ## Node/ Worker Node: 
 A node is a worker machine that performs the requested tasks assigned by the control plane/master node.
-The worker node consists of: 
-* Kubelet, an agent necessary to run the pod, 
-* Kube-proxy maintaining the network rules and allowing communication, 
-* Container runtime software to run containers.
+
+### Components
+Run on each node, where they maintain running pods and provide the Kubernetes runtime environment.
+* Kubelet -  an agent necessary to run the pod, 
+* Kube-proxy - maintaining the network rules and allowing communication, 
+* Container runtime -  software to run containers. Kubernetes supports various container runtimes like Containerd, CRI-O, Docker, or any Kubernetes Container Runtime Interface (CRI) implementation.
 
 ## Main Node / Control plane: 
-Control plane components make decisions about the cluster, like scheduling, detecting, and responding to cluster events, such as starting a new pod when a deployment’s replicas field is not the same as mentioned in the desired state. It includes: 
-* Kube-apiserver to expose Kubernetes API, 
-* etcd, a key-value data storage, 
-* Kube-scheduler to watch over unassigned pods and assign them to a node based on the desired state, and 
-* Kube-controller-manager containing all the controller functions of the control plane.
+Control plane components make decisions about the cluster, like scheduling, detecting, and responding to cluster events, such as starting a new pod when a deployment’s replicas field is not the same as mentioned in the desired state. 
+
+### Components
+* Kube-apiserver - to expose Kubernetes API, 
+* Etcd - a key-value data storage, This component is a highly available and consistent key-value store. Etcd acts as the backing store for all Kubernetes cluster data.
+* Kube-scheduler - to watch over unassigned pods and assign them to a node based on the desired state.
+* Kube-controller-manager - containing all the controller functions of the control plane; the controller process, including node controllers, endpoints controllers, replication controllers, service accounts, and token controllers.
+* Cloud-controller-manager -  The manager links your cluster into your cloud provider's API. It separates the components that interact with the chosen cloud platform from the components that only interact with your cluster.
 
 ## Cluster: 
 A group of worker nodes that run containerized applications. Every cluster has at least one worker node.
@@ -36,23 +40,31 @@ An agent that runs on each node in the cluster, ensuring containers run in a Pod
 ## Kubeproxy: 
 A network proxy that runs on each node in your cluster and implements the Kubernetes Service concept.
 
+This proxy maintains network rules on nodes. 
+
+These rules allow network communication from sessions inside or outside of your cluster to your pods.
+
 ## CoreDNS: 
 DNS server that can be used as the Kubernetes cluster DNS.
 
 ## API server (Kube-API server): 
 The Kubernetes API is accessible through the API server, which is a part of the Kubernetes control plane. 
+
 The API server is the Kubernetes control plane’s front end.
 
 ## Secrets: 
 Kubernetes object with sensitive data stored such as a password, a token, or a key. 
+
 Use secrets to not write sensitive information into your application code.
 
 ## Controller: 
 Controllers are control loops that keep watch on the state of your cluster and make or ask for changes as needed. 
+
 Each controller tries to bring the current state of the cluster closer to the desired state.
 
 ## Operator: 
 This allows you to encapsulate domain-specific knowledge for an application. 
+
 By automating tasks specific to an application, Operators make it easier to deploy and manage apps on K8s.
 
 
@@ -81,8 +93,6 @@ The Kube-proxy exposes services for the outside world to interact with the clust
 
 
 
-
-
 ## Namespaces: 
 Your working area
 It's like a project in GCP or a similar thing in AWS.
@@ -106,14 +116,16 @@ Like a load balancer for pods. Knows which pods are alive, healthy, and ready to
 
 * When using a Kubernetes service, each pod is assigned an IP address. As this address may not be directly knowable, the service provides accessibility, then automatically connects the correct pod, as the example below shows.
 
-* When a service is created it publishes its own virtual address as either an environment variable to every pod or, if your cluster is using coredns, as a dns entry any pod can attempt to reach.
+* When a service is created it publishes its own virtual address as either an environment variable to every pod or, if the cluster is using coredns, as a dns entry any pod can attempt to reach.
 
 * Services are not just for pods. Services can abstract access to DBs, external hosts, or even other services. 
     * In some of these cases you may need an Endpoint object, but for internal communication this is not required.
 
 
 ## Deployments and Services are often used in tandem
-Deployments to define the desired state of the application and Services to make sure communication between almost any kind of resource and the rest of the cluster is stable and adaptable. 
+Deployments define the desired state of the application.
+
+Services to make sure communication between almost any kind of resource and the rest of the cluster is stable and adaptable. 
 
 reference:
 https://www.copado.com/devops-hub/blog/kubernetes-deployment-vs-service-managing-your-pods
@@ -130,28 +142,10 @@ https://about.gitlab.com/blog/2020/07/30/kubernetes-terminology/
 
 
 
-# By component
-## Control Plane:
-Make global decisions affecting the cluster, plus detecting and responding to cluster events, like starting a new pod.
-* Kube-apiserver. This component is the control plane’s front end.
-* Etcd. This component is a highly available and consistent key-value store. Etcd acts as the backing store for all Kubernetes cluster data.
-* Kube-scheduler. This component watches out for newly created pods that lack assigned nodes and chooses nodes for them to run on.
-* Kube-controller-manager. This component runs the controller process, including node controllers, endpoints controllers, replication controllers, service accounts, and token controllers.
-* Cloud-controller-manager. The manager links your cluster into your cloud provider's API. It separates the components that interact with the chosen cloud platform from the components that only interact with your cluster.
-
-
-
-## Node components
-Run on each node, where they maintain running pods and provide the Kubernetes runtime environment.
-* Kubelet. This agent ensures that containers are running in a pod.
-* Kube-proxy. This proxy maintains network rules on nodes. These rules allow network communication from sessions inside or outside of your cluster to your pods.
-* Container runtime. This software runs containers. Kubernetes supports various container runtimes like Containerd, CRI-O, Docker, or any Kubernetes Container Runtime Interface (CRI) implementation.
-
-
 ## Addons
 Some of the addons that use Kubernetes resources to initiate cluster features.
 
-* Cluster DNS. Cluster DNS serves DNS records for Kubernetes services. Although addons aren’t strictly mandatory, Kubernetes clusters should have a DNS because many examples depend on it.
+* Cluster DNS. Cluster DNS serves DNS records for Kubernetes services. Kubernetes clusters should have a DNS because many examples depend on it.
 * Web UI. The Web UI is a general-purpose dashboard for Kubernetes clusters. It lets users manage and troubleshoot the cluster plus any applications running in it.
 * Container Resource Monitoring. This addon records generic time-series metrics regarding the central database’s containers and provides a UI for browsing the data.
 * Cluster-Level Logging. This mechanism saves container logs to a central log store with a searching and browsing interface.
