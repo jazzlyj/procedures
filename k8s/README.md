@@ -1,8 +1,14 @@
 # K8s Architecture and Basic Terminology Explained
 
 ## Pod: 
-Smallest and simplest Kubernetes objects. 
+A unit of work. Smallest and simplest Kubernetes objects. 
+
 Typically, a pod is set up to run a single container.
+
+A way to describe a series of containers, the volumes they might share, and interconnections that those containers within the pod may need. 
+
+Gives ability to migrate an application live from one version to another version without having downtime
+
 
 ## Node/ Worker Node: 
 A node is a worker machine that performs the requested tasks assigned by the control plane/master node.
@@ -81,8 +87,6 @@ The Kube-proxy exposes services for the outside world to interact with the clust
 Your working area
 It's like a project in GCP or a similar thing in AWS.
 
-## Pods: 
-A unit of work. A way to describe a series of containers, the volumes they might share, and interconnections that those containers within the pod may need. Gives ability to migrate an application live from one version to another version without having downtime.'
 
 
 ## Deployment:

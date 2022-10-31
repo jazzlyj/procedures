@@ -1,4 +1,366 @@
-# K8s standalone
+# K8s Install procedure
+https://github.com/Praqma/LearnKubernetes/blob/master/kamran/Kubernetes-The-Hard-Way-on-BareMetal.md
+
+## Build VMS
+* 3 controllers
+* 3 etcd hosts
+* 2 load balancers
+* 3 workers
+
+## update /etc/hosts
+* (opt) MAAS controlled hosts remove 'update_etc_hosts' from 
+```
+sudo vim /etc/cloud/cloud.cfg
+```
+
+* add all hosts to /etc/hosts
+```
+sudo vim /etc/hosts
+# add all hosts to each nodes file
+```
+
+
+## disable the firewall (if running)
+```
+sudo ufw status
+# Status: inactive
+```
+
+* Disable if active:
+```
+sudo ufw disable
+```
+
+
+## Configure / setup TLS certificates for the cluster
+Reference: https://github.com/kelseyhightower/kubernetes-the-hard-way/blob/master/docs/02-certificate-authority.md
+
+* on the primary controller get cfssl and cfssljson
+```
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+chmod +x cfssl_linux-amd64
+sudo mv cfssl_linux-amd64 /usr/local/bin/cfssl
+
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+chmod +x cfssljson_linux-amd64
+sudo mv cfssljson_linux-amd64 /usr/local/bin/cfssljson
+```
+
+### create certificate authority
+* Create CA CSR config file:
+```
+echo '{
+  "signing": {
+    "default": {
+      "expiry": "8760h"
+    },
+    "profiles": {
+      "kubernetes": {
+        "usages": ["signing", "key encipherment", "server auth", "client auth"],
+        "expiry": "8760h"
+      }
+    }
+  }
+}' > ca-config.json
+```
+
+* Generate CA certificate and CA private key:
+```
+echo '{
+  "CN": "Kubernetes",
+  "key": {
+    "algo": "rsa",
+    "size": 2048
+  },
+  "names": [
+    {
+      "C": "US",
+      "L": "SanDiego",
+      "O": "Kubernetes",
+      "OU": "CA",
+      "ST": "California"
+    }
+  ]
+}' > ca-csr.json
+```
+
+* generate CA certificate and it's private key:
+```
+cfssl gencert -initca ca-csr.json | cfssljson -bare ca
+```
+
+### Generate the single Kubernetes TLS certificate:
+
+* set env var for k8s public IP to the same number ending in 0 as the controllers address
+Eg: controllers are .51 and .52 so use the .50 address
+```
+export KUBERNETES_PUBLIC_IP_ADDRESS=X.Y.Z.50
+```
+
+* Create Kubernetes certificate CSR config file
+```
+
+
+```
+
+
+* Generate the Kubernetes certificate and private key:
+```
+
+
+```
+
+* copy private copy and turn on ssh-agent on controller1 (where you have generated all the certs and will scp them from to all the other ndoes)
+see [passwordless-ssh](../ssh.md#passwordless-ssh)
+```
+controller1 03:14:26 ~/.ssh{7} rsync -av jay@u1:~/.ssh/id_ed25519 .
+controller1 03:15:36 ~/.ssh{8} ssha
+```
+
+* copy all cert files to the other hosts
+```
+controller1 03:16:47 ~{11} for i in etcd1 etcd2 etcd3 controller2 worker1 worker2 worker3 lb1 lb2; do scp ca.pem kubernetes-key.pem kubernetes.pem ${i}:/home/jay ; done
+```
+
+
+## Configure etcd nodes
+
+
+* download and install latest etcd on all etcd hosts
+ver 3.5.2 as of 2/20/2022
+```
+wget -q --show-progress --https-only --timestamping \
+  "https://github.com/etcd-io/etcd/releases/download/v3.5.2/etcd-v3.5.2-linux-amd64.tar.gz"
+
+# curl -L https://github.com/coreos/etcd/releases/download/v3.5.2/etcd-v3.5.2-linux-amd64.tar.gz -o etcd-v3.5.2-linux-amd64.tar.gz
+
+{
+tar zxvf etcd-v3.5.2-linux-amd64.tar.gz
+sudo mv etcd-v3.5.2-linux-amd64/etcd* /usr/local/bin
+}
+```
+
+* move cert into place
+```
+{
+  sudo mkdir -p /etc/etcd /var/lib/etcd
+  sudo chmod 700 /var/lib/etcd
+  sudo cp ca.pem kubernetes-key.pem kubernetes.pem /etc/etcd/
+}
+```
+
+* do this on each etcd node
+Note: Make sure to change the IP below to the one belonging to the etcd node you are configuring.
+```
+export INTERNAL_IP='10.10.1.X'
+export ETCD_NAME=$(hostname -s)
+```
+
+
+* Create the etcd systemd unit file:
+
+```
+cat <<EOF | sudo tee /etc/systemd/system/etcd.service
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/etcd \\
+  --name ${ETCD_NAME} \\
+  --cert-file=/etc/etcd/kubernetes.pem \\
+  --key-file=/etc/etcd/kubernetes-key.pem \\
+  --peer-cert-file=/etc/etcd/kubernetes.pem \\
+  --peer-key-file=/etc/etcd/kubernetes-key.pem \\
+  --trusted-ca-file=/etc/etcd/ca.pem \\
+  --peer-trusted-ca-file=/etc/etcd/ca.pem \\
+  --peer-client-cert-auth \\
+  --client-cert-auth \\
+  --initial-advertise-peer-urls https://${INTERNAL_IP}:2380 \\
+  --listen-peer-urls https://${INTERNAL_IP}:2380 \\
+  --listen-client-urls https://${INTERNAL_IP}:2379,https://127.0.0.1:2379 \\
+  --advertise-client-urls https://${INTERNAL_IP}:2379 \\
+  --initial-cluster-token etcd-cluster-0 \\
+  --initial-cluster controller1=https://10.10.1.51:2380,controller2=https://10.10.1.52:2380,controller3=https://10.10.1.53:2380 \\
+  --initial-cluster-state new \\
+  --data-dir=/var/lib/etcd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+
+* Start etcd:
+```
+sudo systemctl daemon-reload
+sudo systemctl enable etcd
+sudo systemctl start etcd
+```
+
+* set endpoint env vars
+```
+export ETCDCTL_API=3
+HOST_1=10.10.1.31
+HOST_2=10.10.1.32
+HOST_3=10.10.1.33
+ENDPOINTS=$HOST_1:2379,$HOST_2:2379,$HOST_3:2379
+```
+
+
+* check health
+```
+etcdctl --write-out="table" member list
+etcdctl --write-out="table" endpoint health
+etcdctl --write-out="table" endpoint status
+```
+
+
+
+
+
+
+
+## Bootstrapping an H/A Kubernetes Control Plane
+
+* Setup TLS certificates in each controller node:
+```
+sudo mkdir -p /var/lib/kubernetes
+sudo mv ca.pem kubernetes-key.pem kubernetes.pem /var/lib/kubernetes/
+```
+
+* Download and install the Kubernetes controller binaries:
+v1.23.3 as of 2/20/22
+```
+wget https://storage.googleapis.com/kubernetes-release/release/v1.23.3/bin/linux/amd64/kube-apiserver
+wget https://storage.googleapis.com/kubernetes-release/release/v1.23.3/bin/linux/amd64/kube-controller-manager
+wget https://storage.googleapis.com/kubernetes-release/release/v1.23.3/bin/linux/amd64/kube-scheduler
+wget https://storage.googleapis.com/kubernetes-release/release/v1.23.3/bin/linux/amd64/kubectl
+chmod +x kube-apiserver kube-controller-manager kube-scheduler kubectl
+sudo mv kube-apiserver kube-controller-manager kube-scheduler kubectl /usr/bin/
+```
+
+### Kubernetes API Server
+
+#### Setup Authentication and Authorization
+##### Authentication
+
+
+#### Create the systemd unit file
+* on each controller server
+```
+export INTERNAL_IP='10.10.1.5X'
+```
+
+* Create the systemd unit file:
+```
+cat > kube-apiserver.service <<"EOF"
+[Unit]
+Description=Kubernetes API Server
+Documentation=https://github.com/GoogleCloudPlatform/kubernetes
+
+[Service]
+ExecStart=/usr/bin/kube-apiserver \
+  --admission-control=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,ResourceQuota \
+  --advertise-address=INTERNAL_IP \
+  --allow-privileged=true \
+  --apiserver-count=3 \
+  --authorization-mode=ABAC \
+  --authorization-policy-file=/var/lib/kubernetes/authorization-policy.jsonl \
+  --bind-address=0.0.0.0 \
+  --enable-swagger-ui=true \
+  --etcd-cafile=/var/lib/kubernetes/ca.pem \
+  --insecure-bind-address=0.0.0.0 \
+  --kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \
+  --etcd-servers=https://10.10.1.31:2379,https://10.10.1.32:2379,https://10.10.1.33:2379 \
+  --service-account-key-file=/var/lib/kubernetes/kubernetes.pem \
+  --service-account-signing-key-file=/var/lib/kubernetes/kubernetes-key.pem \
+  --service-account-issuer=https://10.10.1.50:6443 \
+  --service-cluster-ip-range=10.32.0.0/24 \
+  --service-node-port-range=30000-32767 \
+  --tls-cert-file=/var/lib/kubernetes/kubernetes.pem \
+  --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \
+  --token-auth-file=/var/lib/kubernetes/token.csv \
+  --v=2
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+```
+
+* Substitute IP ADD
+```
+sed -i s/INTERNAL_IP/$INTERNAL_IP/g kube-apiserver.service
+sudo mv kube-apiserver.service /etc/systemd/system/
+```
+
+
+* kube-scheduler - need to use v1beta2 !!!
+```
+cat <<EOF | sudo tee /etc/kubernetes/config/kube-scheduler.yaml
+apiVersion: kubescheduler.config.k8s.io/v1beta2
+kind: KubeSchedulerConfiguration
+clientConnection:
+  kubeconfig: "/var/lib/kubernetes/kube-scheduler.kubeconfig"
+leaderElection:
+  leaderElect: true
+EOF
+
+```
+
+
+
+### Verification
+??? Run the following commands from the same machine used to create the compute instances. ???
+
+Run the command from the host that created the certificates?
+Run the command from the host and dir where cert lives
+* Make a HTTP request for the Kubernetes version info:
+
+
+```
+controller1 06:03:32 /var/lib/kubernetes{8} curl --cacert ca.pem https://10.10.1.51:6443/version
+{
+  "major": "1",
+  "minor": "23",
+  "gitVersion": "v1.23.3",
+  "gitCommit": "816c97ab8cff8a1c72eccca1026f7820e93e0d25",
+  "gitTreeState": "clean",
+  "buildDate": "2022-01-25T21:19:12Z",
+  "goVersion": "go1.17.6",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## PreReqs 
 * [disable swap](../canonical/ubuntu20.md#disable-swap-for-k8s)
@@ -322,3 +684,91 @@ sed '/certificatesDir:/d' $OUTPUT_DIR/kubeadm-init-config.yaml | sudo dd of=/roo
 ```
 sudo kubeadm init --skip-phases certs --config /root/kubeadm-init-config.yaml
 ```
+
+
+
+
+
+
+
+
+
+# load balancer
+
+## install keepalive and HAproxy
+
+## configure
+
+```
+cat > keepalived.conf <<EOF
+vrrp_script check_apiserver {
+  script "/etc/keepalived/check_apiserver.sh"
+  interval 3
+  timeout 10
+  fall 5
+  rise 2
+  weight -2
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface eth0
+    virtual_router_id 1
+    priority 100
+    advert_int 5
+    authentication {
+        auth_type PASS
+        auth_pass mysecret
+    }
+    virtual_ipaddress {
+        10.10.1.40/24
+    }
+    track_script {
+        check_apiserver
+    }
+}
+EOF
+
+```
+
+
+sudo vim check_apiserver.sh
+chmod +x check_apiserver.sh
+sudo mv check_apiserver.sh keepalived.conf
+
+
+add to /etc/haproxy/haproxy.cfg
+```
+frontend kube-apiserver
+  bind *:6443
+  mode tcp
+  option tcplog
+  default_backend kube-apiserver
+
+backend kube-apiserver
+  option httpchk GET /healthz
+  http-check expect status 200
+  mode tcp
+  option ssl-hello-chk
+  balance roundrobin
+    server controller1 10.240.0.51:6443 check fall 3 rise 2
+    server controller2 10.240.0.52:6443 check fall 3 rise 2
+    server controller3 10.240.0.53:6443 check fall 3 rise 2
+```
+
+sudo systemctl daemon-reload
+
+
+
+
+curl --cacert /var/lib/kubernetes/ca.pem https://10.10.1.40:6443/version
+{
+  "major": "1",
+  "minor": "23",
+  "gitVersion": "v1.23.4",
+  "gitCommit": "e6c093d87ea4cbb530a7b2ae91e54c0842d8308a",
+  "gitTreeState": "clean",
+  "buildDate": "2022-02-16T12:32:02Z",
+  "goVersion": "go1.17.7",
+  "compiler": "gc",
+  "platform": "linux/amd64"
