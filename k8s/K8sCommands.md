@@ -4,56 +4,56 @@
 Lists all current pods
 
 ```bash
-Kubectl get pods
+kubectl get pods
 ```
 
 
 Describes pod names
 
 ```bash
-Kubectl describe pod<name>
+kubectl describe pod<name>
 ```
 
 
 Lists all replication controllers
 
 ```bash
-Kubectl get rc
+kubectl get rc
 ```
 
 
 Lists replication controllers in a namespace
 
 ```bash
-Kubectl get rc –namespace=”namespace”
+kubectl get rc –namespace=”namespace”
 ```
 
 
 Shows the replication controller name
 
 ```bash
-Kubectl describe rc <name>
+kubectl describe rc <name>
 ```
 
 
 Lists services
 
 ```bash
-Kubectl get svc
+kubectl get svc
 ```
 
 
 Shows a service name
 
 ```bash
-Kubectl describe svc<name>
+kubectl describe svc<name>
 ```
 
 
 Deletes a pod
 
 ```bash
-Kubectl delete pod<name>
+kubectl delete pod<name>
 ```
 
 
@@ -61,7 +61,7 @@ Kubectl delete pod<name>
 Watches nodes continuously
 
 ```bash
-Kubectl get nodes -w
+kubectl get nodes -w
 ```
 
 
@@ -71,25 +71,25 @@ Kubectl get nodes -w
 Executes the command on service by choosing a container
 
 ```bash
-Kubectl exec<service><commands>[-c< $container>]
+kubectl exec<service><commands>[-c< $container>]
 ```
 
 
 Gets logs from the service for a container
 ```bash
-Kubectl logs -f<name>>[-c< $container>]
+kubectl logs -f<name>>[-c< $container>]
 ```
 
 
 Shows metrics for a node
 ```bash
-Kubectl top node
+kubectl top node
 ```
 
 
 Shows metrics for a pod
 ```bash
-Kubectl top pod
+kubectl top pod
 ```
 
 
@@ -101,19 +101,19 @@ Kubectl top pod
 
 To get version-related information
 ```bash
-Kubectl version
+kubectl version
 ```
 
 
 To get cluster-related information
 ```bash
-Kubectl cluster-info
+kubectl cluster-info
 
 ```
 
 To get configuration details
 ```bash
-Kubectl config g view
+kubectl config g view
 ```
 
 ```bash
@@ -121,7 +121,7 @@ Kubectl config g view
 ```
 To get information about a node
 ```bash
-Kubectl describe node<node>
+kubectl describe node<node>
 ```
 
 
@@ -131,19 +131,19 @@ Kubectl describe node<node>
 
 Launching a pod with a name and image.
 ```bash
-Kubectl run<name> — image=<image-name>
+kubectl run<name> — image=<image-name>
 ```
 
 
 To create a service detailed in <manifest.yaml>
 ```bash
-Kubectl create -f <manifest.yaml>
+kubectl create -f <manifest.yaml>
 ```
 
 
 To scale the replication counter, counting the number of instances.
 ```bash
-Kubectl scale –replicas=<count>rc<name>
+kubectl scale –replicas=<count>rc<name>
 ```
 
 Mapping the external port to the internal replication port.
@@ -154,17 +154,17 @@ Expose rc<name> –port=<external>–target-port=<internal>
 
 Stopping all pods in <n>
 ```bash
-Kubectl drain<n>– delete-local-data–force–ignore-daemonset
+kubectl drain<n>– delete-local-data–force–ignore-daemonset
 ```
 
 
 To create a namespace.
 ```bash
-Kubectl create namespace <namespace>
+kubectl create namespace <namespace>
 ```
 
 
 To let the master node run pods.
 ```bash
-Kubectltaintnodes –all-node-role.kuernetes.io/master-
+kubectltaintnodes –all-node-role.kuernetes.io/master-
 ```
