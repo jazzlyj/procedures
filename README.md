@@ -19,7 +19,8 @@
 
 ## K8s
 * [kubernetes-the-hard-way-metal](https://github.com/jazzlyj/kubernetes-the-hard-way-metal)
-* [K8s](README.md)
+* [K8s](k8s/README.md)
+* [K8s Commands](k8s/K8sCommands.md)
 
 ## Networking
 [networking](networking.md)
