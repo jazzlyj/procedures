@@ -164,6 +164,5 @@ Then you will see the other disk/pool created above when on the "Virtual Machine
 
 
 
-## LXD vm creation
 
 
