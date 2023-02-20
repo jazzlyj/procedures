@@ -114,6 +114,7 @@ sudo apt install mlocate
 sudo apt install git
 sudo apt install vim
 sudo apt install python3-pip
+sudo apt install python3.10-venv
 
 echo alias shutd=\"sudo /sbin/shutdown\" >> ~/.bash_aliases
 
