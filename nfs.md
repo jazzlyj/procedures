@@ -15,7 +15,7 @@ sudo cat /proc/fs/nfsd/versions
 
 
 
-## Creating file systems
+### Creating file systems
 
 ### create the root directory and the share mount points:
 ```bash
@@ -64,14 +64,14 @@ sudo exportfs -v
 ```bash
 sudo apt install nfs-common
 sudo mkdir -p /usr2/home
-sudo mount -t nfs -o vers=4 jayu22:/usr2/home /usr2/home
+sudo mount -t nfs -o vers=4 $NFSSERVER:/usr2/home /usr2/home
 ```
 
 
 ```bash
 sudo vi /etc/fstab
 #add the lines:
-jayu22:/usr2/home /usr2/home     nfs  defaults,timeo=900,retrans=5,_netdev 0 0
+$NFSSERVER:/usr2/home /usr2/home     nfs  defaults,timeo=900,retrans=5,_netdev 0 0
 ```
 
 
