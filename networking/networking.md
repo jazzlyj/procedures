@@ -1,3 +1,51 @@
+# NIC management
+
+## Bridge interfaces
+* show bridges
+```bash
+brctl show
+
+```
+
+
+* remove a bridge interface
+```bash
+ip link set <brNIC> down
+brctl delbr <brNIC>
+```
+
+Or
+
+```bash
+sudo ip link delete br0 type bridge
+```
+
+
+## Real or VLAN interfaces
+* Permanently add interfaces and ip address to the host in the `/etc/network/interfaces` file
+
+```bash
+auto enp2s0.200
+iface enp2s0.200 inet static
+address 10.200.0.1
+netmask 255.255.255.0
+gateway 10.200.0.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device enp2s0.200
+
+auto enp2s0.32
+iface enp2s0.32 inet static
+address 10.32.0.1
+netmask 255.255.255.0
+gateway 10.32.0.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device enp2s0.32
+
+
+```
+
+
+
 # External Routing
 
 ## Enable Kernel IP forwarding on Ubuntu Linux Router
@@ -152,26 +200,7 @@ sudo ip link add link enp2s0 name enp2s0.200 type vlan id 200
 sudo ip addr add 10.200.0.1/24 dev enp2s0.200
 ```
 
-
-* add info to the `/etc/network/interfaces` file
-```
-auto enp2s0.200
-iface enp2s0.200 inet static
-address 10.200.0.1
-netmask 255.255.255.0
-gateway 10.200.0.1
-dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
-vlan-raw-device enp2s0.200
-
-auto enp2s0.32
-iface enp2s0.32 inet static
-address 10.32.0.1
-netmask 255.255.255.0
-gateway 10.32.0.1
-dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
-vlan-raw-device enp2s0.32
-
-```
+* Permanently add interfaces and ip address to the host see [Real or VLAN interfaces](Real or VLAN interfaces)
 
 
 * bring up the nic
