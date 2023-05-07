@@ -1,17 +1,19 @@
 1. Update APT Repository Cache
-
+```bash
 sudo apt update
- 
+```
 
 2. install VNC server on Ubuntu 20.04 | 18.04
 
+```bash
 sudo apt install tigervnc-standalone-server tigervnc-xorg-extension
 sudo apt install xserver-xorg-core
 
 sudo apt install ubuntu-gnome-desktop
+```
 
 3. Set VNC password
-```
+```bash
 vncpasswd
 ```
  
