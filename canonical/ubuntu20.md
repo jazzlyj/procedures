@@ -171,6 +171,12 @@ sudo snap remove maas-test-db --purge
 
 
 
+# Install from media
+IP CIDR 
+10.0.0.0/8
+
+
+
 # Docker setup
 https://docs.docker.com/engine/install/linux-postinstall/
 ```bash
@@ -186,7 +192,7 @@ sudo chmod 666 /var/run/docker.sock
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
 sudo install minikube-linux-amd64 /usr/local/bin/minikube
 # start with docker driver and give the cluster a static ip address
-minikube start --driver docker --static-ip 192.168.200.200
+minikube start --driver docker --static-ip 192.168.200.200 --cpus 8 --disk-size 40g --memory 32g
 # install kubectl
 minikube kubectl -- get pods -A
 
