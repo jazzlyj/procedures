@@ -290,6 +290,14 @@ sudo systemctl disable network-manager.service
 ```
 
 
+# Routing
+On the router host, create a route to the pizza box that hosts the vms.
+the vm network on the pizza box is 192.168.122 and to get to it from the router it needs to go through the pizza box on the 10.240.0 network.
+```bash
+sudo route add -net 192.168.122.0 netmask 255.255.255.0 gw 10.240.0.2
+```
+
+
 # External Routing
 
 ## Enable Kernel IP forwarding on Ubuntu Linux Router
