@@ -177,6 +177,45 @@ IP CIDR
 
 
 
+
+# second disk
+/dev/sdb1
+
+
+## show the disks
+sudo fdisk -l
+
+## format (if nec)
+sudo mkfs.ext4 /dev/sda1
+
+## make directory to mount it under
+sudo mkdir /local/mnt
+
+## get the UUID of the device
+sudo blkid
+
+## add it to fstab
+sudo vim /etc/fstab
+
+UUID=745ae867-1613-4f9b-a428-4e04b8184ee5 /mnt/external1 ext4 defaults 0 0
+
+## mount the volume
+sudo mount -a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Docker setup
 https://docs.docker.com/engine/install/linux-postinstall/
 ```bash

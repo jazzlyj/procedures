@@ -92,10 +92,18 @@ gateway 10.0.0.1
 dns-nameservers 8.8.8.8
 ```
 
+# KVM Networking
+There are a few different ways to allow a virtual machine access to the external network.
 
+1. The default virtual network configuration is known as Usermode Networking. NAT is performed on traffic through the host interface to the outside network.
+
+2. Alternatively, you can configure Bridged Networking to enable external hosts to directly access services on the guest operating system.
 
 
 ## Bridge interfaces
+Bridged networking allows the virtual interfaces to connect to the outside network through the physical interface, making them appear as normal hosts to the rest of the network.
+
+Warning: Network bridging will not work when the physical network device (e.g., eth1, ath0) used for bridging is a wireless device (e.g., ipw3945), as most wireless device drivers do not support bridging!
 
 https://help.ubuntu.com/community/KVM/Networking#Bridged_Networking
 
@@ -169,6 +177,74 @@ sudo ip link delete br0 type bridge
 ```
 
 
+### IP Aliases
+https://help.ubuntu.com/community/KVM/Networking#Bridged_Networking
+
+IP aliases provide a convenient way to give VM guests their own external IPs:
+
+1. Set up bridged networking.
+
+2. Create necessary IP aliases in the host as usual: put in /etc/network/interfaces, e.g.,
+
+auto eth0:0
+iface eth0:0 inet static
+address 192.168.0.11
+netmask 255.255.255.0
+3. Hardwire the guest's IP, either changing it to static, e.g., as 192.168.122.99, in /etc/network/interfaces in the guest or with a host entry in dhcp configuration (see below).
+
+4. Enable routing in the host: uncomment net.ipv4.ip_forward=1 in /etc/sysctl.conf (/etc/ufw/sysctl.conf if using ufw), or temporarily with echo 1 >/proc/sys/net/ipv4/ip_forward.
+
+5. Change virtlib forward from 'nat' to 'route' and adjust dhcp range to exclude the address used for guest (optionally, add host entry for it): 
+'virsh net-edit default' 
+and change the xml to something like this:
+
+```bash
+virsh net-edit default
+```
+
+
+<network>
+  <name>default</name>
+  <uuid>12345678-1234-1234-1234-123456789abc</uuid>
+  <forward mode='route'/>
+  <bridge name='virbr0' stp='on' delay='0' />
+  <ip address='192.168.122.1' netmask='255.255.255.0'>
+    <dhcp>
+      <range start='192.168.122.100' end='192.168.122.254' />
+      <host mac"=00:11:22:33:44:55" name="guest.example.com" ip="192.168.122.99" />
+    </dhcp>
+  </ip>
+</network>
+
+
+**DONT DO THIS**
+6. Direct traffic from external interface to internal and back:
+
+```bash
+iptables -t nat -A PREROUTING -d 192.168.0.11 -j DNAT --to-destination 192.168.122.99
+iptables -t nat -A POSTROUTING -s 192.168.122.99 -j SNAT --to-source 192.168.0.11
+```
+Where to put those depends on your firewall setup; if you use ufw you might use /etc/ufw/before.rules. You might also need to adjust your firewall filtering rules.
+
+**NOTE -** these break things so you cant get into the parent host (the one hostting the vms)
+It makes it so you when you try to login to the parent host you go straight to the VM setup in the forwarding below
+```bash
+virsh  net-edit default
+sudo vi /etc/sysctl.conf
+sudo iptables -t nat -A PREROUTING -d 10.240.0.2 -j DNAT --to-destination 192.168.122.10
+sudo iptables -t nat -A POSTROUTING -s 192.168.122.10 -j SNAT --to-source 10.240.0.2
+
+```
+
+**Do this**
+```bash
+sudo iptables -A FORWARD -i virbr0 -o enp5s0f0 -j ACCEPT
+sudo iptables -A FORWARD -i enp5s0f0 -o virbr0 -m state --state RELATED,ESTABLISHED -j ACCEPT
+sudo iptables -t nat -A POSTROUTING -o enp5s0f0 -j MASQUERADE
+```
+
+
+
 ## Real or VLAN interfaces
 * Permanently add interfaces and ip address to the host in the `/etc/network/interfaces` file
 
@@ -232,31 +308,26 @@ grep net.ipv4.ip_forward /etc/sysctl.conf
 ```
 
 * if the line is present and commented out, uncomment by running the command below:
-
 ```bash
 sudo su root
 sed -i '/net.ipv4.ip_forward/s/^#//' /etc/sysctl.conf
 ```
 
 Otherwise, just insert the line;
-
 ```bash
 sudo su root
 echo 'net.ipv4.ip_forward=1' >> /etc/sysctl.conf
 ```
 
 * Apply the changes;
-
 ```bash
 sudo sysctl -p
 ```
 
 * Check the status by running the command below;
-
 ```bash
 sysctl net.ipv4.ip_forward
 ```
-
 Value should be 1.
 
 
@@ -296,9 +367,7 @@ sudo apt install iptables-persistent
 NOTE: The current rules will be saved during package installation but can still save them thereafter by running the command
 
 
-# internal routing
-NOT NATing. Internal packet forwarding.
-If the host has multiple networks and is serving as a gateway for those other networks then it needs to be able to forward  
+
 
 * configure packet forwarding
 

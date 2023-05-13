@@ -1,3 +1,5 @@
+https://ubuntu.com/server/docs/virtualization-libvirt
+
 # Step 0: prereqs
 * make sure ssh keys are installed and ssh-agent is running (with the private key)
 * good idea to setup 
@@ -6,13 +8,20 @@
 # Step 1: Install required packages
 On your Ubuntu 20.04 execute the following command to install the required packages:
 
-sudo apt -y install bridge-utils cpu-checker libvirt-clients libvirt-daemon qemu qemu-kvm
-
+```bash
+sudo apt -y install bridge-utils cpu-checker libvirt-clients libvirt-daemon libvirt-daemon-system qemu qemu-kvm
+```
 
 # Step 2: verify
+```bash
+kvm-ok
+```
 
 
 # Step 3: create a vm
+Gives a interactive GUI to go through ubuntu installation.
+* Create username and password.
+ 
 
 
 # Step 4: VM management

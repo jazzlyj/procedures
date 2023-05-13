@@ -7,12 +7,17 @@ This post is a step-by-step tutorial that will help you to create a KVM VM using
 Preparation
 Re-synchronize the package index files from their sources and install the newest versions of all packages currently installed on the system:
 
-$ sudo apt update && sudo apt upgrade -y
-$ sudo apt update
-You can check if the server supports Virtualization Technology (VT) in various methods. In this post, you use a tool, virt-host-validate, to validates that the server is configured in a suitable way to run libvirt hypervisor drivers:
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt update
+```
 
-$ sudo apt install -y libvirt-clients
-$ sudo virt-host-validate
+You can check if the server supports Virtualization Technology (VT) in various methods. In this post, you use a tool, virt-host-validate, to validates that the server is configured in a suitable way to run libvirt hypervisor drivers:
+```bash
+sudo apt install -y libvirt-clients
+sudo virt-host-validate
+```
+
 The validation tool will report the following warning message if the server has Intel processors. It is expected because the validation tool does not check Secure Guest on Intel processors:
 
 QEMU: Checking for secure guest support: WARN (Unknown if this platform has Secure Guest support)
@@ -24,56 +29,82 @@ You may also see the following warning message from the validation tool for Inte
 QEMU: Checking if IOMMU is enabled by kernel: WARN (IOMMU appears to be disabled in kernel. Add intel_iommu=on to kernel cmdline arguments)
 The solution to this issue is to enable IOMMU in your GRUB boot parameters. You can do this by setting the following in /etc/default/grub:
 
-GRUB_CMDLINE_LINUX_DEFAULT=”intel_iommu=on”
+  GRUB_CMDLINE_LINUX_DEFAULT=”intel_iommu=on”
+
 Then update the GRUB and reboot the server:
 
-$ sudo update-grub
-$ sudo reboot
+```bash
+sudo update-grub
+sudo reboot
+```
+
 Installation of KVM and Associate Packages
 Run the following command to install KVM and associate VM management packages:
 
-$ sudo apt install -y qemu-kvm \
+```bash
+sudo apt install -y qemu-kvm \
                       libvirt-daemon-system \
                       bridge-utils \
                       virtinst
+```
+
 You can verify if the libvirt daemon is active and enabled:
 
-$ sudo systemctl status libvirtd
+```bash
+sudo systemctl status libvirtd
+```
+
 Run the following command to install cloud image management utilities, cloud-image-utils:
+```bash
+sudo apt install -y cloud-image-utils
+```
 
-$ sudo apt install -y cloud-image-utils
 You also need to add your local user to the kvm and libvirt groups:
-
-$ sudo usermod -aG kvm $USER
-$ sudo usermod -aG libvirt $USER
+```bash
+sudo usermod -aG kvm $USER
+sudo usermod -aG libvirt $USER
+```
 Log out and log back in to make the new group membership available.
 
 Ubuntu Server Cloud Image
 Create a directory for storing downloaded cloud images:
 
-$ mkdir -p $HOME/kvm/base
+```bash
+mkdir -p $HOME/kvm/base
+```
 Download Ubuntu Server 20.04 Cloud Image:
 
-$ wget -P $HOME/kvm/base https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+```bash
+wget -P $HOME/kvm/base https://cloud-images.ubuntu.com/focal/current/focal-server-cloudimg-amd64.img
+```
+
 Create another directory for your VM instance images:
+```bash
+mkdir -p $HOME/kvm/vm01
+```
 
-$ mkdir -p $HOME/kvm/vm01
 Create a disk image, vm01.qcow2, with 10 GB virtual size based on the Ubuntu server 20.04 cloud image:
+```bash
+qemu-img create -F qcow2 -b ~/kvm/base/focal-server-cloudimg-amd64.img -f qcow2 ~/kvm/vm01/vm01.qcow2 10G
+```
 
-$ qemu-img create -F qcow2 -b ~/kvm/base/focal-server-cloudimg-amd64.img -f qcow2 ~/kvm/vm01/vm01.qcow2 10G
 Network Configuration
 Use an internal Bash function, $RANDOM, to generate a MAC address and write it to an environment variable, MAC_ADDR. For KVM VMs it is required that the first 3 pairs in the MAC address be the sequence 52:54:00:
-
-$ export MAC_ADDR=$(printf '52:54:00:%02x:%02x:%02x' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
-$ echo $MAC_ADDR
+```bash
+export MAC_ADDR=$(printf '52:54:00:%02x:%02x:%02x' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
+echo $MAC_ADDR
 52:54:00:fa:e6:de
-Define the ethernet interface name and the internal IP address to be used in the KVM VM:
 
-$ export INTERFACE=eth001
-$ export IP_ADDR=192.168.122.101
+Define the ethernet interface name and the internal IP address to be used in the KVM VM:
+```bash
+export INTERFACE=eth001
+export IP_ADDR=192.168.122.101
+```
+
 Create a network configuration file, network-config:
 
-$ cat >network-config <<EOF
+```bash
+cat >network-config <<EOF
 ethernets:
     $INTERFACE:
         addresses: 
@@ -89,9 +120,12 @@ ethernets:
         set-name: $INTERFACE
 version: 2
 EOF
+```
+
 Cloud-Init Configuration
 Create user-data:
 
+```bash
 $ cat >user-data <<EOF
 #cloud-config
 hostname: vm01
@@ -110,39 +144,59 @@ chpasswd:
     vmadm:vmadm
   expire: false
 EOF
+```
+
 Create meta-data:
+```bash
+touch meta-data
+```
 
-$ touch meta-data
 Create a disk image, vm01-seed.qcow2, to attach with the network and cloud-init configuration:
+```bash
+cloud-localds -v --network-config=network-config ~/kvm/vm01/vm01-seed.qcow2 user-data meta-data
+```
 
-$ cloud-localds -v --network-config=network-config ~/kvm/vm01/vm01-seed.qcow2 user-data meta-data
 Provision a New Guest VM
 Create and start a new guest VM with two disks attached, vm01.qcow2 and vm01-seed.qcow2:
+```bash
+virt-install --connect qemu:///system --virt-type kvm --name vm01 --ram 2048 --vcpus=2 --os-type linux --os-variant ubuntu20.04 --disk path=$HOME/kvm/vm01/vm01.qcow2,device=disk --disk path=$HOME/kvm/vm01/vm01-seed.qcow2,device=disk --import --network network=default,model=virtio,mac=$MAC_ADDR --noautoconsole
+```
 
-$ virt-install --connect qemu:///system --virt-type kvm --name vm01 --ram 2048 --vcpus=2 --os-type linux --os-variant ubuntu20.04 --disk path=$HOME/kvm/vm01/vm01.qcow2,device=disk --disk path=$HOME/kvm/vm01/vm01-seed.qcow2,device=disk --import --network network=default,model=virtio,mac=$MAC_ADDR --noautoconsole
 Check if the guest VM, vm01, is running:
+```bash
+virsh list
+```
 
-$ virsh list
- Id   Name   State
-----------------------
- 8    vm01   running
+  Id   Name   State
+  ----------------------
+  8    vm01   running
+
+
 Type the following command from the KVM host to login to the guest VM console:
+```bash
+virsh console vm01
+```
 
-$ virsh console vm01
 Run the following command from the guest VM to verify the network interface name, IP address and MAC address:
-
+```bash
 vmadm@vm01:~$ ip addr show 
+```
 Type control + shift + ] to exit the guest VM console.
 
-If everything is in order, you can connect to the guest VM using ssh from the KVM host:
 
-$ ssh vmadm@192.168.122.101
+If everything is in order, you can connect to the guest VM using ssh from the KVM host:
+```bash
+ssh vmadm@192.168.122.101
+```
+
+
 Final Notes
 Run the following commands to remove the guest KVM VM:
-
-$ virsh destroy vm01
-$ virsh undefine vm01
-$ rm -rf ~/kvm/vm01
+```bash
+virsh destroy vm01
+virsh undefine vm01
+rm -rf ~/kvm/vm01
+```
 The network configuration file, network-config, is parsed, written, and applied to the guest VM as a netplan file. The netplan file is very selective about indentation, spacing, and no tabs. See the following link for additional help:
 
 https://netplan.io/examples
