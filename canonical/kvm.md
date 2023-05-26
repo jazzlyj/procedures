@@ -57,7 +57,7 @@ Run the following command to install cloud image management utilities, cloud-ima
 sudo apt install -y cloud-image-utils
 ```
 
-You also need to add your local user to the kvm and libvirt groups:
+Add your local user to the kvm and libvirt groups:
 ```bash
 sudo usermod -aG kvm $USER
 sudo usermod -aG libvirt $USER
@@ -92,7 +92,7 @@ cd /local/mnt/kvm/
 mkdir $VM_HOSTNAME
 ```
 
-Create a disk image, vm01.qcow2, with 10 GB virtual size based on the Ubuntu server 20.04 cloud image:
+Create a disk image, $VM_HOSTNAME.qcow2, with XYZ GB virtual size based on the Ubuntu server 20.04 cloud image:
 ```bash
 qemu-img create -F qcow2 -b ~/kvm/base/focal-server-cloudimg-amd64.img -f qcow2 ~/kvm/vm01/vm01.qcow2 10G
 #
@@ -103,7 +103,9 @@ qemu-img create -F qcow2 -b /local/mnt/kvm/base/focal-server-cloudimg-amd64.img 
 ```
 
 # Network Configuration
-Use an internal Bash function, $RANDOM, to generate a MAC address and write it to an environment variable, MAC_ADDR. For KVM VMs it is required that the first 3 pairs in the MAC address be the sequence 52:54:00:
+Use an internal Bash function, $RANDOM, to generate a MAC address and write it to an environment variable, MAC_ADDR. 
+
+For KVM VMs it is required that the first 3 pairs in the MAC address be the sequence 52:54:00:
 ```bash
 export MAC_ADDR=$(printf '52:54:00:%02x:%02x:%02x' $((RANDOM%256)) $((RANDOM%256)) $((RANDOM%256)))
 echo $MAC_ADDR
@@ -112,14 +114,14 @@ echo $MAC_ADDR
   52:54:00:fa:e6:de
 
 
-Define the ethernet interface name and the internal IP address to be used in the KVM VM:
+Define the ethernet interface name and the internal IP address to be used in the VM:
 ```bash
 export INTERFACE=enp1s0
 export IP_ADDR=192.168.122.11
 export VM_HOSTNAME=k8-ctl-2
 ```
 
-Create a network configuration file, network-config:
+Create a network configuration file *network-config*:
 ```bash
 cat >network-config <<EOF
 ethernets:
@@ -140,7 +142,9 @@ EOF
 ```
 
 # Cloud-Init Configuration
-Create user-data:
+Cloud-init allows many post OS creation modifications to be done like the creation of user accounts and package installations. 
+
+Create *user-data*:
 ```bash
 cat >user-data <<EOF
 #cloud-config
@@ -185,7 +189,7 @@ Create meta-data:
 touch meta-data
 ```
 
-Create a disk image, vm01-seed.qcow2 or k8-ctl-2-seed.qcow2, to attach with the network and cloud-init configuration:
+Create a the seed disk image, $VM_HOSTNAME-seed.qcow2 to attach with the network and cloud-init configuration:
 ```bash
 cloud-localds -v --network-config=network-config ~/kvm/vm01/vm01-seed.qcow2 user-data meta-data
 # or
@@ -195,12 +199,12 @@ cloud-localds -v --network-config=network-config /local/mnt/kvm/$VM_HOSTNAME/$VM
 
 ```
 
-  jay@u2:/local/mnt/kvm$ cloud-localds -v --network-config=network-config /local/mnt/kvm/k8-ctl-2/k8-ctl-2-seed.qcow2 user-data meta-data
-  wrote /local/mnt/kvm/k8-ctl-2/k8-ctl-2-seed.qcow2 with filesystem=iso9660 and diskformat=raw
-
+      jay@u2:/local/mnt/kvm$ cloud-localds -v --network-config=network-config /local/mnt/kvm/k8-ctl-2/k8-ctl-2-seed.qcow2 user-data meta-data
+      wrote /local/mnt/kvm/k8-ctl-2/k8-ctl-2-seed.qcow2 with filesystem=iso9660 and diskformat=raw
+    
 
 # Provision a New Guest VM
-Create and start a new guest VM with two disks attached, vm01.qcow2 and vm01-seed.qcow2:
+Create and start a new guest VM with two disks attached, $VM_HOSTNAME.qcow2 and $VM_HOSTNAME-seed.qcow2:
 ```bash
 virt-install --connect qemu:///system --virt-type kvm --name vm01 --ram 2048 --vcpus=2 --os-type linux --os-variant ubuntu20.04 --disk path=$HOME/kvm/vm01/vm01.qcow2,device=disk --disk path=$HOME/kvm/vm01/vm01-seed.qcow2,device=disk --import --network network=default,model=virtio,mac=$MAC_ADDR --noautoconsole
 #
@@ -209,47 +213,51 @@ virt-install --connect qemu:///system --virt-type kvm --name k8-ctl-2 --ram 4096
 virt-install --connect qemu:///system --virt-type kvm --name $VM_HOSTNAME --ram 8192 --vcpus=2 --os-type linux --os-variant ubuntu20.04 --disk path=/local/mnt/kvm/$VM_HOSTNAME/$VM_HOSTNAME.qcow2,device=disk --disk path=/local/mnt/kvm/$VM_HOSTNAME/$VM_HOSTNAME-seed.qcow2,device=disk --import --network network=default,model=virtio,mac=$MAC_ADDR --noautoconsole
 ```
 
-  Starting install...
-  Domain creation completed.
-
+      Starting install...
+      Domain creation completed.
+    
 
 Check if the guest VM, vm01, is running:
 ```bash
 virsh list
 ```
 
-  jay@u2:/local/mnt/kvm$ virsh list
-  Id   Name       State
-  --------------------------
-  1    k8-ctl-1   running
-  2    k8-ctl-2   running
+      jay@u2:/local/mnt/kvm$ virsh list
+      Id   Name       State
+      --------------------------
+      1    k8-ctl-1   running
+      2    k8-ctl-2   running
+    
 
 
-
-Type the following command from the KVM host to login to the guest VM console:
+Use the command from the KVM host (host where vms are created on) to login to the guest VM (the newly created vm) console:
 ```bash
+# virsh console $VM_HOSTNAME
+
 virsh console k8-ctl-2
 ```
 Type control + shift + ] to exit the guest VM console.
 
 
-```
+```bash
 jay@u2:/local/mnt/kvm$ virsh console k8-ctl-2
 Connected to domain k8-ctl-2
 Escape character is ^]
 ```
+
 * Hit enter a couple of times and the login prompt comes up 
 * password is the same as the user name as per the lines in the *user-data* file 
 
-```
+
+```bash
 k8-ctl-2 login: jay
 Password: 
 Welcome to Ubuntu 20.04.6 LTS (GNU/Linux 5.4.0-148-generic x86_64)
-...
+```
 
 
 
-Run the following command from the guest VM to verify the network interface name, IP address and MAC address:
+Use the command from the guest VM to verify the network interface name, IP address and MAC address:
 ```bash
 jay@k8-ctl-2:~$ ip addr show
 ```
