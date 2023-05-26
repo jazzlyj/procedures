@@ -168,3 +168,94 @@ sudo snap remove $PACKAGENAMEmaas-test-db --purge
 # Eg:
 sudo snap remove maas-test-db --purge
 ```
+
+
+
+# Install from media
+IP CIDR 
+10.0.0.0/8
+
+
+
+
+# second disk
+/dev/sdb1
+
+
+## show the disks
+sudo fdisk -l
+
+## format (if nec)
+sudo mkfs.ext4 /dev/sda1
+
+## make directory to mount it under
+sudo mkdir /local/mnt
+
+## get the UUID of the device
+sudo blkid
+
+## add it to fstab
+sudo vim /etc/fstab
+
+UUID=745ae867-1613-4f9b-a428-4e04b8184ee5 /mnt/external1 ext4 defaults 0 0
+
+## mount the volume
+sudo mount -a
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Docker setup
+https://docs.docker.com/engine/install/linux-postinstall/
+```bash
+sudo groupadd docker
+sudo usermod -aG docker $USER
+exit
+# log back in
+getent group docker
+sudo chmod 666 /var/run/docker.sock
+```
+# install minikube
+```bash
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+# start with docker driver and give the cluster a static ip address
+minikube start --driver docker --static-ip 192.168.200.200 --cpus 8 --disk-size 40g --memory 32g
+# install kubectl
+minikube kubectl -- get pods -A
+
+# if nec install kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+kubectl version --client
+kubectl get po -A
+```
+
+
+## dashboard
+```bash
+# install 
+minikube dashboard
+minikube addons enable metrics-server
+
+kubectl get pods --namespace=kubernetes-dashboard
+kubectl proxy --address 0.0.0.0 kubernetes-dashboard-55c4cbbc7c-n2jcb 8001:80 --namespace=kubernetes-dashboard --disable-filter=true
+# go to url from another host- use the IPADDR of the host
+http://__IPADDR__:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/#/workloads?namespace=default
+```
+
+
+
+
+https://docs.docker.com/engine/install/ubuntu/

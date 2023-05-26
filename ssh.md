@@ -57,6 +57,17 @@ cp id_ed25519.pub authorized_keys
 ```
 
 
+# Multi-ssh and tmux
+1. install tmux
+2. use ssh-multi.sh
+
+```bash
+# shell expansion with ranges to create multiple host names 
+ssh-multi.sh -u jay -d "$(echo k8-ctl-{1..3}) $(echo k8-worker-{1..3}) $(echo k8-etcd-{1..3})"
+```
+
+
+
 
 
 # put keys on git hub
