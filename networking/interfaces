@@ -1,0 +1,33 @@
+source-directory /etc/network/interfaces.d
+
+auto eth0.32
+iface eth0.32 inet static
+address 10.32.0.1
+netmask 255.255.255.0
+gateway 10.32.0.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device eth0.32
+
+auto eth0.10
+iface eth0.10 inet static
+address 10.10.1.1
+netmask 255.255.255.0
+gateway 10.10.1.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device eth0.10
+
+auto eth0.201
+iface eth0.201 inet static
+address 10.200.1.1
+netmask 255.255.255.0
+gateway 10.200.1.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device eth0.201
+
+auto eth0.200
+iface eth0.200 inet static
+address 10.200.0.1
+netmask 255.255.0.0
+gateway 10.200.0.1
+dns-nameservers 10.32.0.10 8.8.8.8 4.4.4.4
+vlan-raw-device eth0.200

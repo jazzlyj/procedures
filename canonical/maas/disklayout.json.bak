@@ -1,0 +1,24 @@
+{
+    "layouts": {
+        "sda": {
+           ...
+        },
+        "raid0": {
+           ...
+        },
+        ...
+    },
+    "mounts": {
+		  "/": {
+			"device": "sda2",
+			"options": "noatime"
+		  },
+		  "/boot/efi": {
+			"device": "sda1"
+		  },
+		  "/data": {
+			"device": "raid0"
+		  }     
+		}
+    }
+}

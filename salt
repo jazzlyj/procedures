@@ -1,0 +1,2 @@
+# install salt
+sudo apt-get install salt-minion salt-cloud

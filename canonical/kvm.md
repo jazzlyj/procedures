@@ -252,7 +252,7 @@ wget -P . https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-am
 Create directories for the Guest VM instance images:
 
 ```bash
-export VM_HOSTNAME=n-k8-ctl-02-dev
+export VM_HOSTNAME=k8-ctl-02-dev
 cd /var/kvm/
 mkdir $VM_HOSTNAME
 ```
@@ -263,7 +263,7 @@ Create a disk image, $VM_HOSTNAME.qcow2, with XYZ GB virtual size based on the U
 qemu-img create -F qcow2 -b /var/kvm/base/jammy-server-cloudimg-amd64.img -f qcow2 /var/kvm/$VM_HOSTNAME/$VM_HOSTNAME.qcow2 20G
 ```
 
-    Formatting '/var/kvm/n-k8-ctl-02-dev/n-k8-ctl-02-dev.qcow2', fmt=qcow2 cluster_size=65536 extended_l2=off compression_type=zlib size=21474836480 backing_file=/var/kvm/base/jammy-server-cloudimg-amd64.img backing_fmt=qcow2 lazy_refcounts=off refcount_bits=16
+    Formatting '/var/kvm/k8-ctl-02-dev/k8-ctl-02-dev.qcow2', fmt=qcow2 cluster_size=65536 extended_l2=off compression_type=zlib size=21474836480 backing_file=/var/kvm/base/jammy-server-cloudimg-amd64.img backing_fmt=qcow2 lazy_refcounts=off refcount_bits=16
 
 ## VM Guest Network Configuration
 
@@ -319,10 +319,10 @@ cat > $VM_HOSTNAME/user-data <<EOF
 hostname: $VM_HOSTNAME
 users:
   - default
-  - name: jaylavin
+  - name: jay
     sudo: ALL=(ALL) NOPASSWD:ALL
     groups: users, admin
-    home: /home/jaylavin
+    home: /home/jay
     shell: /bin/bash
     plain_text_passwd: 'your_plain_text_password_here'
     lock_passwd: false
@@ -355,7 +355,7 @@ Create a the seed disk image, $VM_HOSTNAME-seed.qcow2 to attach with the network
 cloud-localds -v --network-config=$VM_HOSTNAME/network-config /var/kvm/$VM_HOSTNAME/$VM_HOSTNAME-seed.qcow2 $VM_HOSTNAME/user-data meta-data
 ```
 
-    wrote /var/kvm/n-k8-ctl-02-dev/n-k8-ctl-02-dev-seed.qcow2 with filesystem=iso9660 and diskformat=raw
+    wrote /var/kvm/k8-ctl-02-dev/k8-ctl-02-dev-seed.qcow2 with filesystem=iso9660 and diskformat=raw
 
 ip route
 
@@ -379,18 +379,18 @@ virsh list
 
     Id   Name                  State
     -------------------------------------
-    1    n-k8-ctl-02-dev   running
+    1    k8-ctl-02-dev   running
 
 Use the command from the KVM host (host where vms are created on) to login to the guest VM (the newly created vm) console:
 
 ```bash
-virsh console n-k8-ctl-02-dev
+virsh console k8-ctl-02-dev
 ```
 
 Type control + shift + ] to exit the guest VM console.
 
-    n-k8s-02-dev 03:52:30 /var/kvm{37} virsh console n-k8-ctl-02-dev
-    Connected to domain n-k8-ctl-02-dev
+    n-k8s-02-dev 03:52:30 /var/kvm{37} virsh console k8-ctl-02-dev
+    Connected to domain k8-ctl-02-dev
     Escape character is ^]
 
 - Hit enter a couple of times and the login prompt comes up
@@ -399,7 +399,7 @@ Type control + shift + ] to exit the guest VM console.
 NOTE: cloud-init is going to run and perform its actions as specified in the user-data file
 
 ```bash
-n-k8s-02-dev login: jaylavin
+n-k8s-02-dev login: jay
 Password:
 Welcome to Ubuntu 22.04.2 LTS (GNU/Linux 5.15.0-73-generic x86_64)
 ```
@@ -407,13 +407,13 @@ Welcome to Ubuntu 22.04.2 LTS (GNU/Linux 5.15.0-73-generic x86_64)
 Use the command from the guest VM to verify the network interface name, IP address and MAC address:
 
 ```bash
-jaylavin@n-k8s-02-dev:~$ ip addr show
+jay@n-k8s-02-dev:~$ ip addr show
 ```
 
 If everything is in order, you can connect to the guest VM using ssh from the KVM host:
 
 ```bash
-ssh jaylavin@192.168.122.12
+ssh jay@192.168.122.12
 ```
 
 ### Fix/Change Guest VM network
@@ -465,7 +465,7 @@ If this is not already taken care of from the VM creation above (where the ssh a
 cd ~/.ssh
 cp id_ed25519.pub authorized_keys
 # send the key to the server you want passwordless ssh
-rsync -av ~/.ssh/authorized_keys jaylavin@n-k8-ctl-02-dev:~/.ssh/
+rsync -av ~/.ssh/authorized_keys jay@k8-ctl-02-dev:~/.ssh/
 ```
 
 # Ansible
@@ -647,7 +647,7 @@ virsh shutdown $VM_HOSTNAME
 # IMPORTANT: Change the "VM NAME" string to match your actual VM Name.
 # In order to create rules to other VMs, just duplicate the below block and configure
 # it accordingly.
-if [ "${1}" = "n-k8-worker-02-dev" ]; then
+if [ "${1}" = "k8-worker-02-dev" ]; then
 
    # Update the following variables to fit your setup
    GUEST_IP=192.168.122.32
@@ -666,7 +666,7 @@ fi
 ```
 
 <!-- ```bash
-if [ "${1}" = "n-k8-ctl-02-dev" ]; then
+if [ "${1}" = "k8-ctl-02-dev" ]; then
 
    # Update the following variables to fit your setup
    GUEST_IP=192.168.121.31
@@ -683,7 +683,7 @@ if [ "${1}" = "n-k8-ctl-02-dev" ]; then
    fi
 fi
 
-if [ "${1}" = "n-k8-ctl-02-dev" ]; then
+if [ "${1}" = "k8-ctl-02-dev" ]; then
 
    # Update the following variables to fit your setup
    GUEST_IP=192.168.121.31
@@ -700,7 +700,7 @@ if [ "${1}" = "n-k8-ctl-02-dev" ]; then
    fi
 fi
 
-if [ "${1}" = "n-k8-ctl-02-dev" ]; then
+if [ "${1}" = "k8-ctl-02-dev" ]; then
 
    # Update the following variables to fit your setup
    GUEST_IP=192.168.121.31
@@ -717,7 +717,7 @@ if [ "${1}" = "n-k8-ctl-02-dev" ]; then
    fi
 fi
 
-if [ "${1}" = "n-k8-ctl-02-dev" ]; then
+if [ "${1}" = "k8-ctl-02-dev" ]; then
 
    # Update the following variables to fit your setup
    GUEST_IP=192.168.121.31
@@ -761,9 +761,9 @@ virsh start $VM_HOSTNAME
 - Test routiung and forwarding from another vm guest on a different network on a another kvm host
 
 ```bash
-n-k8-worker-01-dev> telnet n-k8-worker-02-dev 32713
+k8-worker-01-dev> telnet k8-worker-02-dev 32713
 Trying 192.168.122.32...
-Connected to n-k8-worker-02-dev.
+Connected to k8-worker-02-dev.
 Escape character is '^]'.
 ```
 

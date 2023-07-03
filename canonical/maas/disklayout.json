@@ -1,0 +1,18 @@
+{
+  "layout": {
+    "storage": {
+      "type": "raid",
+      "level": 1,
+      "members": [
+        "sda",
+        "sdb"
+      ],
+      "fs": "btrfs"
+    }
+  },
+  "mounts": {
+    "/data": {
+      "device": "storage"
+    }
+  }
+}

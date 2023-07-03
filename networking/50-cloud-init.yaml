@@ -1,0 +1,85 @@
+# This file is generated from information provided by the datasource.  Changes
+# to it will not persist across an instance reboot.  To disable cloud-init's
+# network configuration capabilities, write a file
+# /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg with the following:
+# network: {config: disabled}
+network:
+    ethernets:
+        eth0:
+            addresses:
+            - 10.240.0.62/24
+            gateway4: 10.240.0.1
+            match:
+                macaddress: 00:16:3e:27:29:ef
+            mtu: 1500
+            nameservers:
+                addresses:
+                - 10.240.0.2
+                - 10.32.0.10
+                - 8.8.8.8
+                search:
+                - maas
+            set-name: eth0
+    version: 2
+    vlans:
+        eth0.10:
+            addresses:
+            - 10.10.1.62/24
+            id: 10
+            link: eth0
+            mtu: 1500
+            nameservers:
+                addresses:
+                - 10.32.0.10
+                - 8.8.8.8
+                - 4.4.4.4
+                search:
+                - maas
+            routes:
+            -   table: 1
+                to: 0.0.0.0/0
+                via: 10.10.1.1
+            routing-policy:
+            -   from: 10.10.1.0/24
+                priority: 100
+                table: 1
+            -   from: 10.10.1.0/24
+                table: 254
+                to: 10.10.1.0/24
+        eth0.200:
+            addresses:
+            - 10.200.2.62/24
+            id: 200
+            link: eth0
+            mtu: 1500
+            nameservers:
+                addresses:
+                - 10.32.0.10
+                - 8.8.8.8
+                - 4.4.4.4
+                search:
+                - maas
+            routes:
+            -   table: 2
+                to: 0.0.0.0/0
+                via: 10.200.2.1
+            routing-policy:
+            -   from: 10.200.2.0/24
+                priority: 100
+                table: 2
+            -   from: 10.200.2.0/24
+                table: 254
+                to: 10.200.2.0/24
+        eth0.32:
+            addresses:
+            - 10.32.0.62/24
+            id: 32
+            link: eth0
+            mtu: 1500
+            nameservers:
+                addresses:
+                - 10.240.0.2
+                - 8.8.8.8
+                - 4.4.4.4
+                search:
+                - maas
