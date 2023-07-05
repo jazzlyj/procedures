@@ -138,10 +138,15 @@ sudo sysctl -p
 ```bash
 sysctl net.ipv4.ip_forward
 ```
-
 Value should be 1.
 
-NOTE: Optional not sure this is required 3. Change virtlib forward from 'nat' to 'route' and adjust dhcp range to exclude the addresses used for guest (optionally, add host entry for it) change the xml to something like this:
+
+* Change virsh "default" network config
+    *  forward from 'nat' to 'route'
+    * set ip address to the network number of choice (.121 or .122) 
+    * adjust dhcp range 
+        * use the correct network number
+        * to exclude the addresses used for guest (optionally, add host entry for it) 
 
 ```bash
 virsh net-edit default
@@ -503,6 +508,8 @@ NOTE: Make sure the _authorized_keys_ file exists on each of the target machines
 ```
 sudo vim /etc/ansible/hosts
 # add the hosts, one per line
+
+
 ```
 
 - Create the playbook to push the /etc/hosts file
